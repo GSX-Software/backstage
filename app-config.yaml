@@ -1,0 +1,82 @@
+app:
+  title: GSX Software - Backstage
+  baseUrl: http://localhost:3000
+
+organization:
+  name: GSX Software
+
+backend:
+  baseUrl: http://localhost:7007
+  listen:
+    port: 7007
+  csp:
+    connect-src: ["'self'", 'http:', 'https:']
+  cors:
+    origin: http://localhost:3000
+    methods: [GET, HEAD, PATCH, POST, PUT, DELETE]
+    credentials: true
+  database:
+    client: pg
+    connection:
+      host: ${POSTGRES_HOST}
+      port: ${POSTGRES_PORT}
+      user: ${POSTGRES_USER}
+      password: ${POSTGRES_PASS}
+
+integrations:
+  github:
+    - host: github.com
+      token: ${GITHUB_TOKEN}
+
+proxy:
+
+techdocs:
+  builder: 'local' # Alternatives - 'external'
+  generator:
+    runIn: 'docker' # Alternatives - 'local'
+  publisher:
+    type: 'local' # Alternatives - 'googleGcs' or 'awsS3'. Read documentation for using alternatives.
+
+auth:
+  providers:
+    guest: {}
+    github:
+      development:
+        clientId: ${GITHUB_CLIENT_ID}
+        clientSecret: ${GITHUB_CLIENT_SECRET}
+        signIn:
+          resolvers:
+            # Matches the GitHub username with the Backstage user entity name.
+            # See https://backstage.io/docs/auth/github/provider#resolvers for more resolvers.
+            - resolver: usernameMatchingUserEntityName
+
+scaffolder:
+
+catalog:
+  rules:
+    - allow: [Component, API, Location, Template, System, Domain, User, Group, Resource ]
+  providers:
+    github:
+      # the provider ID can be any camelCase string
+      providerId:
+        organization: 'GSX-Software' # string
+        catalogPath: 'backstage.yaml' # string
+        filters:
+          branch: 'main' # string
+          repository: '.*' # Regex
+        schedule: # same options as in SchedulerServiceTaskScheduleDefinition
+          # supports cron, ISO duration, "human duration" as used in code
+          frequency: { seconds: 30 }
+          # supports ISO duration, "human duration" as used in code
+          timeout: { minutes: 3 }
+    githubOrg:
+      id: production
+      githubUrl: https://github.com
+      orgs: ['GSX-Software']
+      schedule:
+        frequency: { seconds: 10 }
+        timeout: { minutes: 3 }
+kubernetes:
+
+permission:
+  enabled: true
